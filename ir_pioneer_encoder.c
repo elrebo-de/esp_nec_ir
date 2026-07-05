@@ -20,13 +20,18 @@ typedef struct {
 } rmt_ir_pioneer_encoder_t;
 
 RMT_ENCODER_FUNC_ATTR
-static size_t rmt_encode_ir_pioneer(rmt_encoder_t *encoder, rmt_channel_handle_t channel, const void *primary_data, size_t data_size, rmt_encode_state_t *ret_state)
+static size_t rmt_encode_ir_pioneer(
+    rmt_encoder_t *encoder,
+    rmt_channel_handle_t channel,
+    const void *primary_data,
+    size_t data_size,
+    rmt_encode_state_t *ret_state)
 {
     rmt_ir_pioneer_encoder_t *pioneer_encoder = __containerof(encoder, rmt_ir_pioneer_encoder_t, base);
     rmt_encode_state_t session_state = RMT_ENCODING_RESET;
     rmt_encode_state_t state = RMT_ENCODING_RESET;
     size_t encoded_symbols = 0;
-    ir_pioneer_scan_code_t *scan_code = (ir_pioneer_scan_code_t *)primary_data;
+    ir_pioneer_scan_code_two_commands_t *scan_code = (ir_pioneer_scan_code_two_commands_t *)primary_data;
     rmt_encoder_handle_t copy_encoder = pioneer_encoder->copy_encoder;
     rmt_encoder_handle_t bytes_encoder = pioneer_encoder->bytes_encoder;
 
@@ -34,10 +39,15 @@ static size_t rmt_encode_ir_pioneer(rmt_encoder_t *encoder, rmt_channel_handle_t
     uint16_t address1_be = htons(scan_code->address1);
     // convert command1 to big_endian
     uint16_t command1_be = htons(scan_code->command1);
-    // convert address2 to big_endian
-    uint16_t address2_be = htons(scan_code->address2);
-    // convert command2 to big_endian
-    uint16_t command2_be = htons(scan_code->command2);
+
+    uint16_t address2_be = 0;
+    uint16_t command2_be = 0;
+    if (data_size == 8) {
+        // convert address2 to big_endian
+        address2_be = htons(scan_code->address2);
+        // convert command2 to big_endian
+        command2_be = htons(scan_code->command2);
+    }
 
     switch (pioneer_encoder->state) {
     case 0: // send leading code
@@ -75,14 +85,21 @@ static size_t rmt_encode_ir_pioneer(rmt_encoder_t *encoder, rmt_channel_handle_t
         encoded_symbols += copy_encoder->encode(copy_encoder, channel, &pioneer_encoder->pioneer_ending_symbol,
                                                 sizeof(rmt_symbol_word_t), &session_state);
         if (session_state & RMT_ENCODING_COMPLETE) {
-            pioneer_encoder->state = 4; // we can only switch to next state when current encoder finished
+            if (data_size == 8) {
+                pioneer_encoder->state = 4; // we can only switch to next state when current encoder finished
+            }
+            else {
+                pioneer_encoder->state = RMT_ENCODING_RESET; // back to the initial encoding session
+            }
             state |= RMT_ENCODING_COMPLETE;
         }
         if (session_state & RMT_ENCODING_MEM_FULL) {
             state |= RMT_ENCODING_MEM_FULL;
             goto out; // yield if there's no free space to put other encoding artifacts
         }
-    // fall-through
+        // if one command: break
+        if (data_size == 4) break;
+        // fall-through
     case 4: // send leading code
         encoded_symbols += copy_encoder->encode(copy_encoder, channel, &pioneer_encoder->pioneer_leading_symbol,
                                                 sizeof(rmt_symbol_word_t), &session_state);

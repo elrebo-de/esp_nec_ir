@@ -1,7 +1,7 @@
-version: "1.2.3"
+version: "1.3.0"
 license: "Apache2.0"
-description: "IR transmitter/receiver component using NEC protocol for ESP-IDF version 5.5.0+ using a C++ class"
-url: "https://elrebo.de/index.php/2026/05/05/rmt_ir/"
+description: "IR transmitter/receiver component using NEC, PANASONIC and Pioneer protocols for ESP-IDF version 5.5.0+ using a C++ class"
+url: "https://www.elrebo.de/index.php/2026/05/05/rmt_ir/"
 issues: "https://github.com/elrebo-de/esp_rmt_ir/issues"
 repository: "https://github.com/elrebo-de/esp_rmt_ir.git"
 maintainers:

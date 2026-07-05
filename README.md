@@ -3,9 +3,10 @@
 This repository contains an ESP-IDF component for an IR transmitter and receiver using different remote control protocols. It runs on 
 any ESP32 processor connected to an IR receiver and/or IR transmitter and is built using the ESP-IDF build system in version 5.5+.
 
-Currently two protocols are implemented:
+Currently three protocols are implemented:
 * NEC protocol (used eg. by YAMAHA audio receiver)
 * PANASONIC protocol (used eg. by PANASONIC VIERA TV)
+* Pioneer protocol (used eg. by Pioneer DVD player)
 
 The component is implemented as C++ class `RmtIr`.
 
@@ -21,16 +22,29 @@ Then you have to initialize the `RmtIr` class:
     rmtIr->initialize(); // initialize RMT IR
 ```
 
-Now you can transmit NEC IR codes with `transmitNecCommandFrame` and `transmitNecRepeatFrame` and PANASONIC IR codes with `transmitPanasonicCommandFrame`.
+Now you can transmit NEC IR codes with `transmitNecCommandFrame` and `transmitNecRepeatFrame`, PANASONIC IR codes with `transmitPanasonicCommandFrame` and Pioneer IR codes with `transmitPioneerCommandFrame`.
 
 This example sends the IR code for pushing the "TV Scene" button on the remote control of a YAMAHA audio receiver:
 ```C++
-        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x03); // "TV Scene"
+    rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x03); // "TV Scene"
 ```
 
 This example sends the IR code for pushing the "Power 0/1" button on the remote control of a PANASONIC VIERA TV:
 ```C++
-        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xbc);  // "Power 0/1"
+    rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xbc);  // "Power 0/1"
+```
+
+This example sends the IR code for switching on the Pioneer DVD player:
+```C++
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xba); // "ON" starts the DVD player
+
+```
+
+and this example selects the next track on the DVD:
+```C++
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9c); // "Next" goes to first track (if a CD is inserted)
+
+
 ```
 
 It is also possible to receive IR signals with an IR receiver.
@@ -82,7 +96,7 @@ The beginning of the class definition is shown here:
 ```
 
 # ToDo
-Currently only the NEC and the PANASONIC protocols are implemented.
+Currently only the NEC, the PANASONIC and the Pioneer protocols are implemented.
 
 Currently the only tested IR senders are 
 * the built-in IR LED in M5 Atom Lite and

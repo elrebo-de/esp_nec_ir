@@ -45,6 +45,8 @@ class RmtIr
 
         void transmitPanasonicCommandFrame(uint16_t non_saving_bits_1, uint8_t system_code, uint8_t address, uint8_t command);
 
+        void transmitPioneerCommandFrame(uint8_t address1, uint8_t command1);
+        void transmitPioneerCommandFrame(uint16_t address1, uint16_t command1);
         void transmitPioneerCommandFrame(uint8_t address1, uint8_t command1, uint8_t address2, uint8_t command2);
         void transmitPioneerCommandFrame(uint16_t address1, uint16_t command1, uint16_t address2, uint16_t command2);
 

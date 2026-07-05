@@ -18,9 +18,14 @@ extern "C" {
 typedef struct {
     uint16_t address1;
     uint16_t command1;
+} ir_pioneer_scan_code_one_command_t;
+
+typedef struct {
+    uint16_t address1;
+    uint16_t command1;
     uint16_t address2;
     uint16_t command2;
-} ir_pioneer_scan_code_t;
+} ir_pioneer_scan_code_two_commands_t;
 
 /**
  * @brief Type of IR Pioneer encoder configuration

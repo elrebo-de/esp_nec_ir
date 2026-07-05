@@ -144,15 +144,17 @@ extern "C" void app_main(void)
     /* Initialize RmtIr class */
     ESP_LOGI(tag, "RmtIr");
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
+    rmtIr->setGpioPins(3,0); // set the GPIO pins for Waveshare ESP32C3 Zero: external IR emitter, no IR receiver
     //rmtIr->setGpioPins(4,0); // set the GPIO pins for ESP32C3 Supermini: external IR emitter, no IR receiver
-    rmtIr->setGpioPins(32,0); // set the GPIO pins for M5ATOM LITE: external IR emitter, no IR receiver
+    //rmtIr->setGpioPins(32,0); // set the GPIO pins for M5ATOM LITE: external IR emitter, no IR receiver
     //rmtIr->setGpioPins(12,26); // set the GPIO pins for M5ATOM LITE: internal IR emitter, external IR receiver
     rmtIr->initialize(); // initialize RMT IR
 
     GenericButton onBoardButton(
 	    std::string("onBoardButton"),
+	    (gpio_num_t) 0, // GPIO  Waveshare ESP32C3 Zero
 	    //(gpio_num_t) 9, // GPIO  ESP32C3 Supermini
-	    (gpio_num_t) 39, // GPIO  M5 Atom Lite
+	    //(gpio_num_t) 39, // GPIO  M5 Atom Lite
 	    0, // active = DOWN
 	    true, // pull disabled - M5 Atom does not support internal PU/PD on this gpio
 	    std::string("GPIO")
@@ -172,6 +174,30 @@ extern "C" void app_main(void)
        }
     };
     onBoardButton.RegisterCallbackForEvent(BUTTON_MULTIPLE_CLICK, &clicks, callback_onBoardButton_BUTTON_MULTIPLE_CLICK_3);
+
+    // test pioneer transmit two commands with Pioneer DVD
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xba); // "ON" starts the DVD player
+    vTaskDelay(pdMS_TO_TICKS(20000)); // delay 20 seconds
+
+    // test pioneer transmit one command with Pioneer DVD
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9c); // "Next" goes to first track (if a CD is inserted)
+    vTaskDelay(pdMS_TO_TICKS(5000)); // delay 5 seconds
+
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9c); // "Next" goes to second track
+    vTaskDelay(pdMS_TO_TICKS(5000)); // delay 5 seconds
+
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9c); // "Next" goes to third track
+    vTaskDelay(pdMS_TO_TICKS(5000)); // delay 5 seconds
+
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9d); // "Previous" goes to start of track 3
+    vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9d); // "Previous" goes to track 2
+    vTaskDelay(pdMS_TO_TICKS(5000)); // delay 5 seconds
+
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9d); // "Previous" goes to start of track 2
+    vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9d); // "Previous" goes to track 1
+    vTaskDelay(pdMS_TO_TICKS(5000)); // delay 5 seconds
 
     // receiver test
     while(1) {

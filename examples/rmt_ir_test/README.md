@@ -10,15 +10,22 @@ A button long click switches on/off the tuner of a YAMAHA audio receiver for lis
 
 ## Hardware
 
+M5 ATOM LITE Esp32 SoC
 * An M5 ATOM LITE Esp32 SoC with IR sender on GPIO 12 and onBoard button on GPIO 39.
 * An IR sensor connected to the GPIO pin 26 is needed to receive IR signals.
+
+or a Waveshare ESP32C3 Zero
+* A Waveshare Esp32C3 SoC with IR sender on GPIO 3 and a button on GPIO 0.
+* An IR sensor connected to an other GPIO pin is needed to receive IR signals.
+
+or any other ESP32 SoC with configured GPIOs for btton, IR sender and (optional) IR receiver
 
 ## Build and Flash
 
 Build the project and flash it to the board, then run the monitor tool to view the serial output:
 
 * Run `source <directory with ESP-IDF version>/export.sh` to set IDF environment
-* Run `idf.py set-target esp32` to set target chip ESP32
+* Run `idf.py set-target esp32` to set target chip ESP32 or `idf.py set-target esp32c3` to set target chip ESP32C3
 * Run `idf.py -p PORT flash monitor` to build, flash and monitor the project
 
 (To exit the serial monitor, type `Ctrl-]` (or on a Mac `Ctrl-Option-6`).
@@ -31,6 +38,11 @@ Two callback functions are defined for the events
 * BUTTON_SINGLE_CLICK,
 * BUTTON_DOUBLE_CLICK and
 * BUTTON_LONG_PRESS_START with press_time 1000 msec.
+
+### At program start
+A test sequence for the two kinds of Pioneer Command Frames is sent to a Pioneer DVD player (Address A3).
+
+First the extended Pioneer command frame (Two Commands) is sent to switch the DVD player on, then some "normal" Pioneer frames (One Command) are sent to go to the next track (A3-9C) and to the previous track (A3-9D).
 
 ### Single Click
 In case of a single_click two NEC command frames are sent to the YAMAHA audio receiver and two PANASONIC command frames are sent to the PANASONIC TV.

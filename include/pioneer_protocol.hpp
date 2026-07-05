@@ -32,6 +32,8 @@ class PioneerProtocol
         bool pioneer_parse_frame_repeat(rmt_symbol_word_t *rmt_pioneer_symbols);
         void example_parse_pioneer_frame(rmt_symbol_word_t *rmt_pioneer_symbols, size_t symbol_num);
 
+        void transmitPioneerCommandFrame(rmt_channel_handle_t tx_channel, uint8_t address1, uint8_t command1);
+        void transmitPioneerCommandFrame(rmt_channel_handle_t tx_channel, uint16_t address1, uint16_t command1);
         void transmitPioneerCommandFrame(rmt_channel_handle_t tx_channel, uint8_t address1, uint8_t command1, uint8_t address2, uint8_t command2);
         void transmitPioneerCommandFrame(rmt_channel_handle_t tx_channel, uint16_t address1, uint16_t command1, uint16_t address2, uint16_t command2);
         void receivePioneerFrame(rmt_channel_handle_t rx_channel, QueueHandle_t receive_queue);

@@ -204,7 +204,63 @@ void PioneerProtocol::receivePioneerFrame(
     example_parse_pioneer_frame(rx_data.received_symbols, rx_data.num_symbols);
 }
 
-// Function to transmit a PIONEER command frame
+// Function to transmit a PIONEER command frame with one command
+void PioneerProtocol::transmitPioneerCommandFrame(
+         rmt_channel_handle_t tx_channel,
+         uint8_t address1,
+         uint8_t command1)
+{
+    ESP_LOGI(tag.c_str(), "Prepare a PIONEER command frame address1=%02X, command1=%02X", address1, command1);
+
+    uint8_t address1_inverted = ~address1;
+    uint16_t address1_16 = (((uint16_t) address1) << 8) + (uint16_t) address1_inverted;
+
+    uint8_t command1_inverted = ~command1;
+    uint16_t command1_16 = (((uint16_t) command1) << 8) + (uint16_t) command1_inverted;
+
+    this->transmitPioneerCommandFrame(tx_channel, address1_16, command1_16);
+}
+
+// Function to transmit a PIONEER command frame with one command
+// this is equal to a NEC command frame
+void PioneerProtocol::transmitPioneerCommandFrame(
+         rmt_channel_handle_t tx_channel,
+         uint16_t address1,
+         uint16_t command1)
+{
+    ESP_LOGI(tag.c_str(), "Transmit a PIONEER command frame address1=%04X, command1=%04X", address1, command1);
+
+    // this example won't send PIONEER frames in a loop
+    rmt_transmit_config_t transmit_config = {
+        .loop_count = 0, // no loop
+        .flags = {
+            .eot_level = 1,
+            .queue_nonblocking = 1,
+        }
+    };
+
+    const ir_pioneer_scan_code_one_command_t scan_code_one_command = {
+        .address1 = address1,
+        .command1 = command1,
+    };
+
+    ESP_LOGI(tag.c_str(), "apply 40kHz carrier to TX channel");
+    rmt_carrier_config_t carrier_cfg = {
+        .frequency_hz = 40000, // 40KHz
+        .duty_cycle = 0.33,
+        .flags = {
+            .polarity_active_low = 1,
+            .always_on = 1,
+        }
+    };
+    ESP_ERROR_CHECK(rmt_disable(tx_channel));
+    ESP_ERROR_CHECK(rmt_apply_carrier(tx_channel, &carrier_cfg));
+    ESP_ERROR_CHECK(rmt_enable(tx_channel));
+    ESP_ERROR_CHECK(rmt_transmit(tx_channel, pioneer_encoder, &scan_code_one_command, sizeof(scan_code_one_command), &transmit_config));
+    //vTaskDelay(pdMS_TO_TICKS(1000)); // delay 1 seconds
+}
+
+// Function to transmit a PIONEER command frame with two commands
 void PioneerProtocol::transmitPioneerCommandFrame(
          rmt_channel_handle_t tx_channel,
          uint8_t address1,
@@ -229,7 +285,7 @@ void PioneerProtocol::transmitPioneerCommandFrame(
     this->transmitPioneerCommandFrame(tx_channel, address1_16, command1_16, address2_16, command2_16);
 }
 
-// Function to transmit a PIONEER command frame
+// Function to transmit a PIONEER command frame with two commands
 void PioneerProtocol::transmitPioneerCommandFrame(
          rmt_channel_handle_t tx_channel,
          uint16_t address1,
@@ -248,7 +304,7 @@ void PioneerProtocol::transmitPioneerCommandFrame(
         }
     };
 
-    const ir_pioneer_scan_code_t scan_code = {
+    const ir_pioneer_scan_code_two_commands_t scan_code_two_commands = {
         .address1 = address1,
         .command1 = command1,
         .address2 = address2,
@@ -267,7 +323,7 @@ void PioneerProtocol::transmitPioneerCommandFrame(
     ESP_ERROR_CHECK(rmt_disable(tx_channel));
     ESP_ERROR_CHECK(rmt_apply_carrier(tx_channel, &carrier_cfg));
     ESP_ERROR_CHECK(rmt_enable(tx_channel));
-    ESP_ERROR_CHECK(rmt_transmit(tx_channel, pioneer_encoder, &scan_code, sizeof(scan_code), &transmit_config));
+    ESP_ERROR_CHECK(rmt_transmit(tx_channel, pioneer_encoder, &scan_code_two_commands, sizeof(scan_code_two_commands), &transmit_config));
     //vTaskDelay(pdMS_TO_TICKS(1000)); // delay 1 seconds
 }
 

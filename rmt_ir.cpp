@@ -138,6 +138,16 @@ void RmtIr::initialize()
         this->panasonicProtocol->transmitPanasonicCommandFrame(tx_channel, non_saving_bits_1, system_code, address, command);
     }
 
+    void RmtIr::transmitPioneerCommandFrame(uint8_t address1, uint8_t command1)
+    {
+        this->pioneerProtocol->transmitPioneerCommandFrame(tx_channel, address1, command1);
+    }
+
+    void RmtIr::transmitPioneerCommandFrame(uint16_t address1, uint16_t command1)
+    {
+        this->pioneerProtocol->transmitPioneerCommandFrame(tx_channel, address1, command1);
+    }
+
     void RmtIr::transmitPioneerCommandFrame(uint8_t address1, uint8_t command1, uint8_t address2, uint8_t command2)
     {
         this->pioneerProtocol->transmitPioneerCommandFrame(tx_channel, address1, command1, address2, command2);
